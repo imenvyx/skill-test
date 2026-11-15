@@ -96,7 +96,15 @@ Awaiting the user's second review. Implementation stays blocked until approval.
 - [x] Review round 1 applied: axios, Zod, T5 edit/delete, cache tests, search
       rationale corrected. 20 tests planned.
 - [ ] PRDs approved by user (second review) — **BLOCKED, waiting on user**.
-- [ ] T1 Test infrastructure
+- [x] T1 Test infrastructure — vitest@0.34.6 + RTL 14.3.1 + jsdom 25.0.1 +
+      jest-dom 6.9.1 (exact pin to avoid the RTL-14 peer conflict); `test`
+      script `vitest run`; config in `vite.config.ts` via `vitest/config`
+      (`defineConfig` — the `/// <reference types="vitest" />` directive does
+      NOT typecheck on 0.34.6); `src/test/setup.ts` with cleanup;
+      `src/App.test.tsx` smoke test. RED observed (`error Command "test" not
+      found`), then GREEN. `resolutions: {"vitest/vite": "^4.3.9"}` added to
+      keep a single Vite 4 copy (vitest's range resolves a nested vite 5
+      otherwise). App.tsx/main.tsx untouched (verified via git diff).
 - [ ] T2 Users list
 - [ ] T3 User posts
 - [ ] T4 Create-post form
