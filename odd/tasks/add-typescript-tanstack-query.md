@@ -114,6 +114,23 @@ fixed:
 After the fix, `tsc -b` leaves the repository root clean and additionally
 type-checks `vite.config.ts`, which plain `tsc --noEmit` never covered.
 
+## Review record
+
+- Assessed tier: **medium** (`configuration_change` in `.eslintrc.json`),
+  `review_due: true` (`slice_budget_reached`, 15 files, 1575 changed lines).
+- Candidate consent: **granted** by the user; native transaction
+  `review-cdb452306617d3dd` created and frozen at revision
+  `sha256:86ae96ff90036f2a6b0640a6ad16f838b00c8362f6236dc6d37b838738b3d9be`.
+- The single selected lens (`review-reliability`) could not run: the runtime
+  model hit a free-usage hard cap on three launches (not a Gentle AI defect).
+  No reviewer result, no receipt, no authority burned.
+- User then chose to **skip this candidate**: the exact provider-issued decline
+  invocation ran once and returned `action: "declined"`,
+  `consent: "declined_this_candidate"`. No review record is persisted; future
+  reviews stay enabled.
+- Consequence: this change ships **without a native review receipt**. Delivery
+  (push / PR / merge) remains a separate human decision.
+
 ## Verification evidence
 
 Run on the final worktree, after the correction above:
