@@ -153,5 +153,8 @@ Run on the final worktree, after the correction above:
   because `lint` only targets `src`. Extending lint to the repository root
   requires handling `tailwind.config.js` (`module.exports` in a `.js` file) too.
 - `react-hook-form` is installed and unused by design. First real form imports it.
-- `@emotion/*` (3 packages) have zero usages in `src/` — decision pending:
-  remove or adopt. Tailwind is the only styling system currently in use.
+- ~~`@emotion/*` (3 packages) have zero usages in `src/` — decision pending~~ —
+  **resolved**: removed `@emotion/css`, `@emotion/react` and `@emotion/styled`
+  by user decision; Tailwind is now the only styling system. If a runtime-
+  dynamic style need appears later, re-evaluate adding Emotion with a written
+  rule first.
