@@ -15,9 +15,12 @@ validated form, so that the new post shows up in their post list.
    text input for the post `title` and a textarea for the post `body`. Both
    fields are required (the user brief's "title and text required"; "text"
    maps to the `body` field of the API object).
-2. The form is managed by react-hook-form: submitting with any required field
-   empty shows a visible validation error under each empty field, and no API
-   call is made.
+2. The form is managed by react-hook-form with a Zod schema wired through
+   `zodResolver`: a single `z.object` schema (both fields required) is the
+   single source of truth for validation AND TypeScript types via `z.infer`
+   (RHF has no "extendType" function — the typing comes from the schema
+   inference). Submitting with any required field empty shows a visible
+   validation error under each empty field, and no API call is made.
 3. A valid submit calls `POST https://jsonplaceholder.typicode.com/posts`
    with `{ userId, title, body }` (the routed `userId`).
 4. While the POST is in flight, the form fields and the submit button are
@@ -34,9 +37,8 @@ validated form, so that the new post shows up in their post list.
 
 - Persisting the created post anywhere beyond the in-memory query cache (the
   API itself does not persist; documented, not worked around).
-- Editing or deleting existing posts.
-- Field validation beyond required-non-empty (no length limits, no format
-  rules).
+- Editing or deleting existing posts (that is T5's scope).
+- Field validation beyond the Zod schema (no length limits, no format rules).
 - Success toast or notification; the new post appearing in the list is the
   success signal.
 
@@ -72,4 +74,6 @@ validated form, so that the new post shows up in their post list.
       each field.
 - [ ] While posting, both fields and the submit button are disabled
       (asserted).
+- [ ] The Zod schema is the single source of truth for both validation and
+      form types (`z.infer`); no hand-written duplicate type exists.
 - [ ] No persistence layer beyond the query cache exists in the code.

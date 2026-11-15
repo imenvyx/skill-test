@@ -30,7 +30,7 @@ what that user wrote.
 
 ## Out of scope
 
-- Editing, deleting, or expanding individual posts.
+- Expanding individual posts (edit and delete of posts are T5's scope).
 - A separate user-detail screen (the posts screen is the detail view).
 - Prefetching posts when hovering a user in the list.
 - Route transitions other than list → posts.
@@ -51,10 +51,16 @@ what that user wrote.
 - T3-4 Shows a not-found state when the query resolves with an empty array
   for the routed `userId`.
   - RED criterion: fails because no not-found state exists.
+- T3-5 Cache read on remount: mount `/users/1`, unmount, then remount (or
+  navigate away and back), and assert the fetch mock was called exactly once
+  for the `['posts', 1]` key — the second mount reads the entry from the
+  TanStack Query cache (`staleTime` is 60s and `refetchOnWindowFocus` is
+  false in `src/lib/queryClient.ts`).
+  - RED criterion: fails because no posts screen exists yet to mount twice.
 
 ## Acceptance criteria
 
-- [ ] All four tests (T3-1 … T3-4) observed RED before their implementation
+- [ ] All five tests (T3-1 … T3-5) observed RED before their implementation
       and GREEN afterwards, with real runs of `corepack yarn test`.
 - [ ] `corepack yarn typecheck`, `corepack yarn build`, `corepack yarn lint`
       pass.

@@ -36,20 +36,41 @@ the user before implementation starts. TDD explicitly requested.
 - `docs/prd/t2-users-list.md`
 - `docs/prd/t3-user-posts.md`
 - `docs/prd/t4-create-post-form.md`
-- `docs/prd/t5-readme.md`
+- `docs/prd/t5-edit-delete-posts.md`
+- `docs/prd/t6-readme.md`
 
-Status: drafted, awaiting user review. Implementation is blocked until the
-user approves or adjusts the PRDs.
+Status: review round 1 applied (user decisions: axios, Zod + @hookform/resolvers,
+edit/delete in scope with delete confirmation, cache-behavior tests in T2/T3,
+client-side search kept with corrected rationale documented in the README).
+Awaiting the user's second review. Implementation stays blocked until approval.
+
+### Review round 1 — decisions of record
+
+1. Navigation list -> posts confirmed as already specced (no change).
+2. Axios adopted as HTTP transport behind `src/api/` (BASE_URL + typed
+   wrappers); single source of truth for URLs is the module, not axios.
+3. Cache-behavior tests added: T2-6 and T3-5 assert the fetch mock is called
+   exactly once on remount (reads from cache).
+4. Zod + @hookform/resolvers adopted: one schema = validation + types
+   (`z.infer`); RHF has no "extendType" — schema inference is the typing.
+5. Edit (inline, reuses the T4 schema, `PUT /posts/{id}`, in-place cache
+   update) and delete (explicit confirmation, `DELETE /posts/{id}`, cache
+   removal) added as T5; README renumbered to T6.
+6. Search stays client-side; rationale corrected (server-side `?q=` exists,
+   verified live, but the dataset can never really grow — every write is
+   faked, verified with `POST /users` -> 201 that is not persisted); the
+   README must document this decision and its evidence.
 
 ## Tasks
 
 | ID | Task | PRD | Route | Notes |
 | -- | ---- | --- | ----- | ----- |
 | T1 | Test infrastructure: Vitest + Testing Library + jsdom, `test` script, smoke test RED→GREEN | `docs/prd/t1-test-infrastructure.md` | delegated writer | TDD enabler |
-| T2 | Users list with name search; loading / error / empty states | `docs/prd/t2-users-list.md` | delegated writer | strict TDD |
-| T3 | User selection shows their posts | `docs/prd/t3-user-posts.md` | delegated writer | strict TDD |
-| T4 | Create-post form (RHF) with cache update | `docs/prd/t4-create-post-form.md` | delegated writer | strict TDD |
-| T5 | README | `docs/prd/t5-readme.md` | delegated writer | last, records real outcomes |
+| T2 | Users list with name search; loading / error / empty states; cache test | `docs/prd/t2-users-list.md` | delegated writer | strict TDD |
+| T3 | User selection shows their posts; cache test | `docs/prd/t3-user-posts.md` | delegated writer | strict TDD |
+| T4 | Create-post form (RHF + Zod) with cache update | `docs/prd/t4-create-post-form.md` | delegated writer | strict TDD |
+| T5 | Edit and delete posts with cache update | `docs/prd/t5-edit-delete-posts.md` | delegated writer | strict TDD |
+| T6 | README | `docs/prd/t6-readme.md` | delegated writer | last, records real outcomes |
 
 ## TDD mode
 
@@ -72,9 +93,12 @@ user approves or adjusts the PRDs.
 - [x] Exploration: scaffold state known (TS strict, query client wired,
       RHF installed unused, Tailwind sole styling system, no tests yet).
 - [x] PRDs drafted (global + 5 tasks).
-- [ ] PRDs reviewed / adjusted by user — **BLOCKED, waiting on user**.
+- [x] Review round 1 applied: axios, Zod, T5 edit/delete, cache tests, search
+      rationale corrected. 20 tests planned.
+- [ ] PRDs approved by user (second review) — **BLOCKED, waiting on user**.
 - [ ] T1 Test infrastructure
 - [ ] T2 Users list
 - [ ] T3 User posts
 - [ ] T4 Create-post form
-- [ ] T5 README
+- [ ] T5 Edit and delete posts
+- [ ] T6 README

@@ -1,4 +1,4 @@
-# PRD — T5: README
+# PRD — T6: README
 
 Goal: write the repository README so it answers exactly the five points of
 the user brief: how to run it, decisions taken, what to do with more time, and
@@ -18,10 +18,19 @@ evaluate the work without reading the whole history.
    typecheck`, `corepack yarn build`, `corepack yarn lint`, and what each
    verifies.
 2. It contains a "Decisions taken" section that mirrors the decisions and
-   rationales of `docs/prd/global.md` (router, TanStack Query keys, client
-   side search because no server-side search endpoint exists, react-hook-form,
-   Tailwind, Vitest, cache-update create flow because `POST /posts` does not
-   persist).
+   rationales of `docs/prd/global.md` (router, TanStack Query keys, axios as
+   the HTTP transport, Zod + `@hookform/resolvers` for form validation,
+   client-side search, react-hook-form, Tailwind, Vitest, and the
+   cache-update flows for create, edit, and delete because every write —
+   `POST /posts`, `PUT /posts/{id}`, `DELETE /posts/{id}` — is faked and not
+   persisted).
+3. The "Decisions taken" section documents the client-side-search decision
+   with its verified evidence: server-side full-text search exists
+   (`GET /users?q=leanne` → `array[1]`, case-insensitive, verified; also
+   `?name_like=`, exact `?name=`, and `?username=` filters), but the dataset
+   can never really grow (`POST /users` was verified to not persist —
+   `GET /users` still returns 10 users), so one fetch plus in-memory
+   filtering is the chosen design.
 3. It contains a "What to do with more time" section listing honest future
    work (for example: coverage tooling, E2E tests, better error observability,
    pagination if the dataset grew) — future work only, never presented as
@@ -48,28 +57,30 @@ evaluate the work without reading the whole history.
 T5 produces no executable code; its "tests" are documentation checks. Each
 has a fails-now criterion because the README section does not exist yet.
 
-- T5-1 "How to run" section exists and lists only commands that match real
+- T6-1 "How to run" section exists and lists only commands that match real
   `package.json` scripts.
   - RED criterion: fails now because the README does not exist.
-- T5-2 "Decisions taken" section exists and matches `docs/prd/global.md`
+- T6-2 "Decisions taken" section exists and matches `docs/prd/global.md`
   decisions with their one-line rationales.
   - RED criterion: fails now because the README does not exist.
-- T5-3 "What to do with more time" section exists and lists only undone work.
+- T6-3 "What to do with more time" section exists and lists only undone work.
   - RED criterion: fails now because the README does not exist.
-- T5-4 "How AI was used" section exists with asked/accepted/corrected parts
+- T6-4 "How AI was used" section exists with asked/accepted/corrected parts
   traceable to the real session record (PRD review outcomes).
   - RED criterion: fails now because the README does not exist.
 
 ## Acceptance criteria
 
-- [ ] The four sections (T5-1 … T5-4) exist, in that order or better.
+- [ ] The four sections (T6-1 … T6-4) exist, in that order or better.
 - [ ] Every command in the README runs successfully in the repo at the time
       of writing.
 - [ ] The AI-usage section cites real review outcomes (for example: PRDs
       reviewed before implementation, any item rejected or corrected during
       the review) with no invented dialogue or metrics.
-- [ ] The README states the JSONPlaceholder `POST /posts` non-persistence
-      caveat wherever the create-post flow is described.
+- [ ] The README states that every JSONPlaceholder write is faked —
+      `POST /posts`, `PUT /posts/{id}`, and `DELETE /posts/{id}` all return
+      success without persisting, so the dataset can never really grow —
+      wherever the create, edit, or delete flow is described.
 - [ ] `corepack yarn typecheck`, `corepack yarn build`, `corepack yarn lint`,
       and `corepack yarn test` all pass after the README is added (docs-only
       change, but the suite must stay green).

@@ -32,8 +32,12 @@ user quickly.
 - Pagination or sorting of the user list.
 - Search by any field other than `name` (no username, email, or company
   search).
-- Server-side search (JSONPlaceholder exposes no search endpoint; the filter
-  is client-side by design — see `global.md`).
+- Server-side search is deliberately not used in the app: JSONPlaceholder
+  does offer it (`GET /users?q=leanne` → `array[1]`, full-text and
+  case-insensitive, verified), but the dataset can never really grow (every
+  write is faked — `POST /users` verified to not persist), so one fetch plus
+  in-memory filtering is correct and simpler. The README (T6) must document
+  this decision together with its verified evidence.
 - A user detail screen; the link target is the posts screen.
 
 ## Test requirements
@@ -53,10 +57,16 @@ user quickly.
 - T2-5 Shows the empty state when the filter matches nothing (type text that
   matches no user name).
   - RED criterion: fails because no empty-state UI exists.
+- T2-6 Cache read on remount: mount the users screen, unmount it, remount it,
+  and assert the fetch mock was called exactly once — the second mount reads
+  the `['users']` entry from the TanStack Query cache (`staleTime` is 60s and
+  `refetchOnWindowFocus` is false in `src/lib/queryClient.ts`).
+  - RED criterion: fails because nothing asserts the fetch call count across
+    mounts.
 
 ## Acceptance criteria
 
-- [ ] All five tests (T2-1 … T2-5) observed RED before their implementation
+- [ ] All six tests (T2-1 … T2-6) observed RED before their implementation
       and GREEN afterwards, with real runs of `corepack yarn test`.
 - [ ] `corepack yarn typecheck`, `corepack yarn build`, `corepack yarn lint`
       pass.
