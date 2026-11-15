@@ -146,10 +146,12 @@ Run on the final worktree, after the correction above:
 
 ## Known follow-ups (not in this change)
 
-- `eslint` resolves to 8.50.0 from the lockfile while `@typescript-eslint@8.72.2`
-  declares peer `eslint ^8.57.0`. Lint is clean on 8.50, but a fresh install
-  prints a peer warning. Fix: bump `eslint` to `^8.57.0`.
+- ~~`eslint` resolves to 8.50.0 from the lockfile while `@typescript-eslint@8.72.2`
+  declares peer `eslint ^8.57.0`~~ — **resolved**: bumped to `^8.57.0`
+  (commit `chore(deps)`), lint clean on the new version.
 - The `vite.config.ts` / `*.cjs` ESLint overrides are currently unreachable
   because `lint` only targets `src`. Extending lint to the repository root
   requires handling `tailwind.config.js` (`module.exports` in a `.js` file) too.
 - `react-hook-form` is installed and unused by design. First real form imports it.
+- `@emotion/*` (3 packages) have zero usages in `src/` — decision pending:
+  remove or adopt. Tailwind is the only styling system currently in use.
