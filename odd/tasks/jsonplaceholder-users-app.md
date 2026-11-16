@@ -61,12 +61,33 @@ Awaiting the user's second review. Implementation stays blocked until approval.
    faked, verified with `POST /users` -> 201 that is not persisted); the
    README must document this decision and its evidence.
 
+## Review status (native RDD)
+
+Native review is **inoperable in this runtime**, diagnosed with evidence:
+
+- The `review-reliability` lens subagent receives `GENTLE_AI_REVIEW_BINDING`
+  correctly (it quotes the exact subject hash) but the host transport never
+  injects the `GENTLE_AI_REVIEW_CONTEXT` block carrying `artifact_subject`,
+  `base_tree`, `candidate_tree` and `changed_path_manifest`. The lens correctly
+  refuses instead of falling back to the live worktree, returning
+  `inspection.status: "incomplete"`.
+- Reproduced twice with different models over OpenRouter
+  (`baidu/ernie-5.5-flash-preview:free`, `thinkingmachines/inkling-2-small:free`)
+  — deterministic, not a quota or model-capability issue.
+- Separately, the default subagent channel (`opencode/*`, `ollama-cloud/*`) was
+  blocked by a per-account free-usage cap, reproduced across 4 models.
+
+Consequence: candidates are declined candidate-scoped (never the kill switch,
+reviews stay enabled) and verification relies on the functional checks
+(`test`, `typecheck`, `build`, `lint`) plus parent spot checks. T6 (README)
+must state this honestly.
+
 ## Tasks
 
 | ID | Task | PRD | Route | Notes |
 | -- | ---- | --- | ----- | ----- |
 | T1 | Test infrastructure: Vitest + Testing Library + jsdom, `test` script, smoke test RED→GREEN | `docs/prd/t1-test-infrastructure.md` | delegated writer | TDD enabler |
-| T2 | Users list with name search; loading / error / empty states; cache test | `docs/prd/t2-users-list.md` | delegated writer | strict TDD |
+| T2 | Users list with name search; loading / error / empty states; cache test | `docs/prd/t2-users-list.md` | inline (parent) | strict TDD; delegation blocked by provider quota |
 | T3 | User selection shows their posts; cache test | `docs/prd/t3-user-posts.md` | delegated writer | strict TDD |
 | T4 | Create-post form (RHF + Zod) with cache update | `docs/prd/t4-create-post-form.md` | delegated writer | strict TDD |
 | T5 | Edit and delete posts with cache update | `docs/prd/t5-edit-delete-posts.md` | delegated writer | strict TDD |
@@ -95,7 +116,8 @@ Awaiting the user's second review. Implementation stays blocked until approval.
 - [x] PRDs drafted (global + 5 tasks).
 - [x] Review round 1 applied: axios, Zod, T5 edit/delete, cache tests, search
       rationale corrected. 20 tests planned.
-- [ ] PRDs approved by user (second review) — **BLOCKED, waiting on user**.
+- [x] PRDs approved: review round 1 applied, then the user said "procede"
+      (implementation of T1/T2 proceeded under that approval).
 - [x] T1 Test infrastructure — vitest@0.34.6 + RTL 14.3.1 + jsdom 25.0.1 +
       jest-dom 6.9.1 (exact pin to avoid the RTL-14 peer conflict); `test`
       script `vitest run`; config in `vite.config.ts` via `vitest/config`
@@ -105,7 +127,25 @@ Awaiting the user's second review. Implementation stays blocked until approval.
       found`), then GREEN. `resolutions: {"vitest/vite": "^4.3.9"}` added to
       keep a single Vite 4 copy (vitest's range resolves a nested vite 5
       otherwise). App.tsx/main.tsx untouched (verified via git diff).
-- [ ] T2 Users list
+- [x] T2 Users list — inline implementation (all subagent providers blocked by
+      quota: opencode free, Ollama Cloud, OpenRouter paid and free, reproduced
+      across 6+ launches). Aborted delegated code discarded; T2 rebuilt from
+      scratch with observed RED for all six tests:
+      - T2-1 RED `Failed to resolve import "../../api/users"` → GREEN.
+      - T2-2 RED `Unable to find a label with the text of: /search users by name/i` → GREEN.
+      - T2-3 RED `Unable to find an element with the text: /loading users/i` → GREEN.
+      - T2-4 RED `Unable to find an element with the text: /failed to load users/i`
+        (then a cross-test mock leak surfaced as `called 2 times, but got 5`;
+        fixed with `vi.resetAllMocks()` in `beforeEach`) → GREEN.
+      - T2-5 RED empty `<ul />` with no message → GREEN.
+      - T2-6 RED `expected "spy" to be called 1 times, but got 2 times` with a
+        `staleTime: 0` client → GREEN after wiring `queryClientDefaults`.
+      Files: `src/api/{client,types,users}.ts`, `src/features/users/{useUsers.ts,
+      UsersScreen.tsx,UsersScreen.test.tsx}`, routing in `src/App.tsx` +
+      `src/main.tsx`, `src/App.test.tsx` wrapped in `MemoryRouter`.
+      `queryClient.ts` now exports `queryClientDefaults` (behavior and values
+      unchanged) so T2-6 asserts the real production cache config.
+      Checks: `test` 7 passed, `typecheck` 0, `build` 0, `lint` 0 warnings.
 - [ ] T3 User posts
 - [ ] T4 Create-post form
 - [ ] T5 Edit and delete posts
