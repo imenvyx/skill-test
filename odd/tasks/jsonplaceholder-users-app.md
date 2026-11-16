@@ -199,4 +199,14 @@ must state this honestly.
         find an element with the text: /failed to update the post/i` → GREEN
         with inline error, typed values kept, `getPosts` not refetched.
       Checks: `test` 21 passed, `typecheck` 0, `build` 0, `lint` 0 warnings.
-- [ ] T6 README
+- [x] T6 README — inline. `README.md` written with the four required sections
+      (How to run, Decisions taken, What to do with more time, How AI was used).
+      RED criterion observed: the file was the 2-line scaffold stub
+      (`# vite-sito-template`), so every required section was absent. Commands
+      were cross-checked against the real `package.json` scripts; test count
+      (21 in 3 files) matches the live run. Two honesty notes are recorded in
+      the doc rather than hidden: axios was deferred (fetch wrapper kept as the
+      single seam, a documented deviation from the PRD), and the native review
+      integration never ran in this environment, so no review receipt is claimed.
+      Checks: `test` 21 passed, `typecheck` 0, `build` 0, `lint` 0 warnings.
+- [x] All tasks complete.
