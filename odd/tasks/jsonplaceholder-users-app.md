@@ -147,6 +147,18 @@ must state this honestly.
       unchanged) so T2-6 asserts the real production cache config.
       Checks: `test` 7 passed, `typecheck` 0, `build` 0, `lint` 0 warnings.
 - [ ] T3 User posts
+- [x] T3 User posts — inline (same provider block). Route `/users/:userId`
+      registered in `src/App.tsx`; `src/api/posts.ts` (`getPostsByUserId`),
+      `src/features/posts/{useUserPosts.ts, UserPostsScreen.tsx,
+      UserPostsScreen.test.tsx}`; query key `['posts', userId]`. Observed REDs:
+      - T3-1 RED `Failed to resolve import "../../api/posts"` → GREEN.
+      - T3-2 RED `Unable to find an element with the text: /loading posts/i` → GREEN.
+      - T3-3 RED `Unable to find an element with the text: /failed to load posts/i` → GREEN.
+      - T3-4 RED `Unable to find an element with the text: /no posts found/i` → GREEN.
+      - T3-5 RED `expected "spy" to be called 1 times, but got 2 times` with a
+        `staleTime: 0` client → GREEN with `createTestQueryClient()`
+        (production `staleTime` 60s).
+      Checks: `test` 12 passed, `typecheck` 0, `build` 0, `lint` 0 warnings.
 - [ ] T4 Create-post form
 - [ ] T5 Edit and delete posts
 - [ ] T6 README

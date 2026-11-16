@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react'
 import { Link, Route, Routes } from 'react-router-dom'
+import { UserPostsScreen } from './features/posts/UserPostsScreen'
 import { UsersScreen } from './features/users/UsersScreen'
 
 function App(): ReactElement {
@@ -23,6 +24,7 @@ function App(): ReactElement {
             }
           />
           <Route path="/users" element={<UsersScreen />} />
+          <Route path="/users/:userId" element={<UserPostsScreen />} />
         </Routes>
       </main>
     </div>
