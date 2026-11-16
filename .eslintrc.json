@@ -1,17 +1,20 @@
 {
   "extends": [
     "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
     "plugin:import/errors",
+    "plugin:import/typescript",
     "plugin:react/recommended",
     "plugin:jsx-a11y/recommended",
     "plugin:react-hooks/recommended",
     "prettier"
   ],
+  "parser": "@typescript-eslint/parser",
   "rules": {
     "react/prop-types": 0,
     "react/react-in-jsx-scope": 0
   },
-  "plugins": ["react", "import", "jsx-a11y"],
+  "plugins": ["react", "import", "jsx-a11y", "@typescript-eslint"],
   "parserOptions": {
     "ecmaVersion": 2022,
     "sourceType": "module",
@@ -21,6 +24,7 @@
   },
   "env": {
     "es6": true,
+    "es2022": true,
     "browser": true,
     "node": true
   },
@@ -30,8 +34,30 @@
     },
     "import/resolver": {
       "node": {
-        "extensions": [".js", ".jsx"]
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "files": ["vite.config.ts"],
+      "env": {
+        "browser": false,
+        "node": true
+      },
+      "parserOptions": {
+        "sourceType": "module"
+      }
+    },
+    {
+      "files": ["*.cjs"],
+      "env": {
+        "browser": false,
+        "node": true
+      },
+      "parserOptions": {
+        "sourceType": "script"
+      }
+    }
+  ]
 }
