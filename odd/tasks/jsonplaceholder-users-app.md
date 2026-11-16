@@ -88,10 +88,10 @@ must state this honestly.
 | -- | ---- | --- | ----- | ----- |
 | T1 | Test infrastructure: Vitest + Testing Library + jsdom, `test` script, smoke test RED→GREEN | `docs/prd/t1-test-infrastructure.md` | delegated writer | TDD enabler |
 | T2 | Users list with name search; loading / error / empty states; cache test | `docs/prd/t2-users-list.md` | inline (parent) | strict TDD; delegation blocked by provider quota |
-| T3 | User selection shows their posts; cache test | `docs/prd/t3-user-posts.md` | delegated writer | strict TDD |
-| T4 | Create-post form (RHF + Zod) with cache update | `docs/prd/t4-create-post-form.md` | delegated writer | strict TDD |
-| T5 | Edit and delete posts with cache update | `docs/prd/t5-edit-delete-posts.md` | delegated writer | strict TDD |
-| T6 | README | `docs/prd/t6-readme.md` | delegated writer | last, records real outcomes |
+| T3 | User selection shows their posts; cache test | `docs/prd/t3-user-posts.md` | inline (parent) | strict TDD; delegation blocked by provider quota |
+| T4 | Create-post form (RHF + Zod) with cache update | `docs/prd/t4-create-post-form.md` | inline (parent) | strict TDD; delegation blocked by provider quota |
+| T5 | Edit and delete posts with cache update | `docs/prd/t5-edit-delete-posts.md` | inline (parent) | strict TDD; delegation blocked by provider quota |
+| T6 | README | `docs/prd/t6-readme.md` | inline (parent) | last, records real outcomes; docs-only |
 
 ## TDD mode
 
@@ -121,7 +121,8 @@ must state this honestly.
       RHF installed unused, Tailwind sole styling system, no tests yet).
 - [x] PRDs drafted (global + 5 tasks).
 - [x] Review round 1 applied: axios, Zod, T5 edit/delete, cache tests, search
-      rationale corrected. 20 tests planned.
+      rationale corrected. 20 tests planned → 21 delivered (T5-5 added to cover
+      the "failed PUT or DELETE" requirement for both branches).
 - [x] PRDs approved: review round 1 applied, then the user said "procede"
       (implementation of T1/T2 proceeded under that approval).
 - [x] T1 Test infrastructure — vitest@0.34.6 + RTL 14.3.1 + jsdom 25.0.1 +
