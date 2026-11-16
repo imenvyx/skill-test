@@ -75,12 +75,21 @@ Native review is **inoperable in this runtime**, diagnosed with evidence:
   (`baidu/ernie-5.5-flash-preview:free`, `thinkingmachines/inkling-2-small:free`)
   — deterministic, not a quota or model-capability issue.
 - Separately, the default subagent channel (`opencode/*`, `ollama-cloud/*`) was
-  blocked by a per-account free-usage cap, reproduced across 4 models.
+  blocked by a per-account free-usage cap, reproduced across 4 models:
+  `opencode/*` free -> `Free usage limit reached`; `ollama-cloud/*` ->
+  `Add usage credits or subscribe`; OpenRouter free tier ->
+  `Rate limit exceeded: free-models-per-day`; OpenRouter paid tier ->
+  `This request requires more credits, or fewer max_tokens`.
 
 Consequence: candidates are declined candidate-scoped (never the kill switch,
 reviews stay enabled) and verification relies on the functional checks
 (`test`, `typecheck`, `build`, `lint`) plus parent spot checks. T6 (README)
 must state this honestly.
+
+Manual verification: after implementation the author reviewed every task diff,
+the full test suite and the four verification commands by hand to confirm the
+work was correct. This is manual review, not an automated review receipt, and
+the README says so explicitly.
 
 ## Tasks
 

@@ -1,36 +1,36 @@
-import type { ReactElement } from 'react'
-import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { CreatePostForm } from './CreatePostForm'
-import { EditPostForm } from './EditPostForm'
-import { useCreatePost } from './useCreatePost'
-import { useDeletePost } from './useDeletePost'
-import { useUpdatePost } from './useUpdatePost'
-import { useUserPosts } from './useUserPosts'
+import type { ReactElement } from "react";
+import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { CreatePostForm } from "./CreatePostForm";
+import { EditPostForm } from "./EditPostForm";
+import { useCreatePost } from "./useCreatePost";
+import { useDeletePost } from "./useDeletePost";
+import { useUpdatePost } from "./useUpdatePost";
+import { useUserPosts } from "./useUserPosts";
 
 export function UserPostsScreen(): ReactElement {
-  const { userId } = useParams<{ userId: string }>()
-  const numericUserId = Number(userId)
-  const { posts, isLoading, isError, refetch } = useUserPosts(numericUserId)
-  const createPostMutation = useCreatePost(numericUserId)
-  const updatePostMutation = useUpdatePost(numericUserId)
-  const deletePostMutation = useDeletePost(numericUserId)
-  const [editingPostId, setEditingPostId] = useState<number | null>(null)
+  const { userId } = useParams<{ userId: string }>();
+  const numericUserId = Number(userId);
+  const { posts, isLoading, isError, refetch } = useUserPosts(numericUserId);
+  const createPostMutation = useCreatePost(numericUserId);
+  const updatePostMutation = useUpdatePost(numericUserId);
+  const deletePostMutation = useDeletePost(numericUserId);
+  const [editingPostId, setEditingPostId] = useState<number | null>(null);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<number | null>(
     null,
-  )
+  );
 
   async function confirmDelete(id: number): Promise<void> {
     try {
-      await deletePostMutation.mutateAsync(id)
-      setConfirmingDeleteId(null)
+      await deletePostMutation.mutateAsync(id);
+      setConfirmingDeleteId(null);
     } catch {
       // Keep the confirmation and the list intact; the error is shown inline.
     }
   }
 
   if (isLoading) {
-    return <p className="text-slate-500">Loading posts...</p>
+    return <p className="text-slate-500">Loading posts...</p>;
   }
 
   if (isError) {
@@ -45,15 +45,17 @@ export function UserPostsScreen(): ReactElement {
           Retry
         </button>
       </div>
-    )
+    );
   }
 
   return (
     <section>
-      <h2 className="mb-4 text-xl font-semibold">Posts</h2>
-      <Link to="/users" className="mb-4 inline-block text-blue-600 underline">
-        Back to users
-      </Link>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="mb-4 text-xl font-semibold">Posts</h2>
+        <Link to="/users" className="mb-4 inline-block text-blue-600 underline">
+          Back to users
+        </Link>
+      </div>
 
       <CreatePostForm
         onCreate={createPostMutation.mutateAsync}
@@ -74,8 +76,11 @@ export function UserPostsScreen(): ReactElement {
                 <EditPostForm
                   post={post}
                   onSave={async (values) => {
-                    await updatePostMutation.mutateAsync({ id: post.id, values })
-                    setEditingPostId(null)
+                    await updatePostMutation.mutateAsync({
+                      id: post.id,
+                      values,
+                    });
+                    setEditingPostId(null);
                   }}
                   onCancel={() => setEditingPostId(null)}
                   isSubmitting={updatePostMutation.isPending}
@@ -89,8 +94,8 @@ export function UserPostsScreen(): ReactElement {
                     <button
                       type="button"
                       onClick={() => {
-                        updatePostMutation.reset()
-                        setEditingPostId(post.id)
+                        updatePostMutation.reset();
+                        setEditingPostId(post.id);
                       }}
                       className="rounded border border-slate-300 px-3 py-1 text-sm text-slate-700"
                     >
@@ -140,5 +145,5 @@ export function UserPostsScreen(): ReactElement {
         </ul>
       )}
     </section>
-  )
+  );
 }

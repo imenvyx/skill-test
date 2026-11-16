@@ -1,6 +1,6 @@
 # JSONPlaceholder Users App
 
-Small React + TypeScript app over [JSONPlaceholder](https://jsonplaceholder.typicode.com):
+React + TypeScript app over [JSONPlaceholder](https://jsonplaceholder.typicode.com):
 a searchable users list, each user's posts, and a validated create form plus
 per-post edit and delete. Loading, error (with retry), empty/not-found, and
 mutation-failure states are all visible in the UI.
@@ -144,7 +144,41 @@ rationale for client-side search.
   under `node_modules/.tmp`. ESLint was bumped for `@typescript-eslint` peer
   compatibility.
 
-The native review integration could not run in this environment: its reviewer
-step requires context that the host transport never injects, so review
-candidates were declined rather than reported as reviewed. No review receipt
-exists for this work, and this README does not claim one.
+### Why the native review never ran
+
+The native review integration is **inoperable in this runtime**, and it was
+diagnosed with evidence rather than assumed. What happens:
+
+- The reviewer subagent receives `GENTLE_AI_REVIEW_BINDING` correctly — it quotes
+  the exact subject hash of the frozen candidate — but the host transport never
+  injects the companion `GENTLE_AI_REVIEW_CONTEXT` block, which is the one that
+  carries `artifact_subject`, `base_tree`, `candidate_tree`, and
+  `changed_path_manifest`. Without those immutable trees the reviewer has
+  nothing legitimate to inspect.
+- The reviewer then does the correct thing: it refuses rather than falling back
+  to the live worktree, returning `inspection.status: "incomplete"`. A fallback
+  to mutable working files would have produced a review of bytes that were never
+  frozen, which is worse than no review.
+- This was reproduced twice with different models over OpenRouter
+  (`baidu/ernie-5.5-flash-preview:free` and
+  `thinkingmachines/inkling-2-small:free`), so it is deterministic transport
+  behaviour, not a quota issue or a model-capability issue.
+
+Separately, the default subagent channel was blocked by per-account free-usage
+caps, reproduced across several models: `opencode/*` free returned
+`Free usage limit reached`, `ollama-cloud/*` returned `Add usage credits or
+subscribe`, and OpenRouter returned `Rate limit exceeded: free-models-per-day` on
+its free tier and `This request requires more credits, or fewer max_tokens` on
+its paid tier. That is why tasks T2–T6 were implemented inline by the parent
+orchestrator instead of being delegated, still one test at a time with an
+observed RED before every behaviour.
+
+**Consequence:** each review candidate was declined candidate-scoped — not the
+kill switch, reviews stayed enabled — and verification rested on the functional
+checks (`test`, `typecheck`, `build`, `lint`) plus parent spot checks. No review
+receipt exists for this work and this README does not claim one.
+
+**Manual review:** the author reviewed all the implemented code by hand — each
+task's diff, the test suite, and the four verification commands — to confirm
+the work was correct. That review was manual and is not represented as an
+automated review receipt.
