@@ -146,7 +146,6 @@ must state this honestly.
       `queryClient.ts` now exports `queryClientDefaults` (behavior and values
       unchanged) so T2-6 asserts the real production cache config.
       Checks: `test` 7 passed, `typecheck` 0, `build` 0, `lint` 0 warnings.
-- [ ] T3 User posts
 - [x] T3 User posts — inline (same provider block). Route `/users/:userId`
       registered in `src/App.tsx`; `src/api/posts.ts` (`getPostsByUserId`),
       `src/features/posts/{useUserPosts.ts, UserPostsScreen.tsx,
@@ -159,6 +158,23 @@ must state this honestly.
         `staleTime: 0` client → GREEN with `createTestQueryClient()`
         (production `staleTime` 60s).
       Checks: `test` 12 passed, `typecheck` 0, `build` 0, `lint` 0 warnings.
-- [ ] T4 Create-post form
+- [x] T4 Create-post form — inline (same provider block). Zod schema
+      (`src/features/posts/createPostSchema.ts`, single source of validation +
+      `z.infer` types), `useCreatePost.ts` (mutation + `setQueryData` prepend),
+      `CreatePostForm.tsx` (RHF + `zodResolver`), wired into
+      `UserPostsScreen.tsx`; `zod@3.23.8` + `@hookform/resolvers@3.9.0`
+      installed. Observed REDs:
+      - T4-1 RED `Unable to find an accessible element with the role "button"
+        and name /create post/i` → GREEN with a validation-only form.
+      - T4-2 RED `expected "spy" to be called 1 times, but got 0 times` → GREEN
+        with `onCreate`/`isSubmitting` wiring and disabled inputs.
+      - T4-3 RED `Unable to find an element with the text: Fresh body` → GREEN
+        with the `onSuccess` cache prepend and `reset()`.
+      - T4-4 RED `Unable to find an element with the text: /failed to create
+        the post/i` → GREEN with `hasError` + a `catch` that keeps typed values.
+      Note: the first T4-1 implementation already contained T4-2..T4-4 logic;
+      it was reduced back to a validation-only form so each later test had a
+      real RED.
+      Checks: `test` 16 passed, `typecheck` 0, `build` 0, `lint` 0 warnings.
 - [ ] T5 Edit and delete posts
 - [ ] T6 README

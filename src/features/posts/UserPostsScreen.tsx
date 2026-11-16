@@ -1,11 +1,14 @@
 import type { ReactElement } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { CreatePostForm } from './CreatePostForm'
+import { useCreatePost } from './useCreatePost'
 import { useUserPosts } from './useUserPosts'
 
 export function UserPostsScreen(): ReactElement {
   const { userId } = useParams<{ userId: string }>()
   const numericUserId = Number(userId)
   const { posts, isLoading, isError, refetch } = useUserPosts(numericUserId)
+  const createPostMutation = useCreatePost(numericUserId)
 
   if (isLoading) {
     return <p className="text-slate-500">Loading posts...</p>
@@ -32,6 +35,12 @@ export function UserPostsScreen(): ReactElement {
       <Link to="/users" className="mb-4 inline-block text-blue-600 underline">
         Back to users
       </Link>
+
+      <CreatePostForm
+        onCreate={createPostMutation.mutateAsync}
+        isSubmitting={createPostMutation.isPending}
+        hasError={createPostMutation.isError}
+      />
 
       {posts.length === 0 ? (
         <p className="text-slate-500">No posts found for this user.</p>
