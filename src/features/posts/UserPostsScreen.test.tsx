@@ -4,17 +4,26 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Post } from '../../api/types'
-import { createPost, getPostsByUserId } from '../../api/posts'
+import {
+  createPost,
+  deletePost,
+  getPostsByUserId,
+  updatePost,
+} from '../../api/posts'
 import { queryClientDefaults } from '../../lib/queryClient'
 import { UserPostsScreen } from './UserPostsScreen'
 
 vi.mock('../../api/posts', () => ({
   getPostsByUserId: vi.fn(),
   createPost: vi.fn(),
+  updatePost: vi.fn(),
+  deletePost: vi.fn(),
 }))
 
 const mockedGetPosts = vi.mocked(getPostsByUserId)
 const mockedCreatePost = vi.mocked(createPost)
+const mockedUpdatePost = vi.mocked(updatePost)
+const mockedDeletePost = vi.mocked(deletePost)
 
 function makePost(id: number, title: string, body: string): Post {
   return { userId: 1, id, title, body }
@@ -49,6 +58,16 @@ function renderUserPostsScreen(
       </QueryClientProvider>,
     ),
   }
+}
+
+function getPostItem(title: string): HTMLElement {
+  const item = screen.getByText(title).closest('li')
+
+  if (!item) {
+    throw new Error(`No list item found for post "${title}"`)
+  }
+
+  return item
 }
 
 describe('UserPostsScreen', () => {
@@ -227,5 +246,154 @@ describe('UserPostsScreen', () => {
     expect(screen.getByLabelText(/^title$/i)).not.toBeDisabled()
     expect(screen.getByLabelText(/^body$/i)).not.toBeDisabled()
     expect(screen.getByRole('button', { name: /create post/i })).not.toBeDisabled()
+  })
+
+  it('T5-1 opens an inline edit form prefilled with the post values', async () => {
+    mockedGetPosts.mockResolvedValue(posts)
+    const user = userEvent.setup()
+
+    renderUserPostsScreen('1')
+
+    expect(await screen.findByText('First post')).toBeInTheDocument()
+
+    await user.click(
+      within(getPostItem('First post')).getByRole('button', { name: /edit/i }),
+    )
+
+    expect(screen.getByLabelText(/edit title/i)).toHaveValue('First post')
+    expect(screen.getByLabelText(/edit body/i)).toHaveValue('First body')
+  })
+
+  it('T5-2 saves an edit through the API and updates the visible post in place', async () => {
+    mockedGetPosts.mockResolvedValue(posts)
+    const updated: Post = {
+      userId: 1,
+      id: 1,
+      title: 'Updated title',
+      body: 'Updated body',
+    }
+    mockedUpdatePost.mockResolvedValue(updated)
+    const user = userEvent.setup()
+
+    renderUserPostsScreen('1')
+
+    expect(await screen.findByText('First post')).toBeInTheDocument()
+
+    await user.click(
+      within(getPostItem('First post')).getByRole('button', { name: /edit/i }),
+    )
+
+    const titleInput = screen.getByLabelText(/edit title/i)
+    await user.clear(titleInput)
+    await user.type(titleInput, 'Updated title')
+
+    const bodyInput = screen.getByLabelText(/edit body/i)
+    await user.clear(bodyInput)
+    await user.type(bodyInput, 'Updated body')
+
+    await user.click(screen.getByRole('button', { name: /save changes/i }))
+
+    expect(await screen.findByText('Updated title')).toBeInTheDocument()
+    expect(screen.queryByText('First post')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/edit title/i)).not.toBeInTheDocument()
+    expect(mockedUpdatePost).toHaveBeenCalledTimes(1)
+    expect(mockedUpdatePost).toHaveBeenCalledWith(1, {
+      title: 'Updated title',
+      body: 'Updated body',
+    })
+    expect(screen.getByText('Second post')).toBeInTheDocument()
+  })
+
+  it('T5-3 deletes a post only after explicit confirmation', async () => {
+    mockedGetPosts.mockResolvedValue(posts)
+    mockedDeletePost.mockResolvedValue(undefined)
+    const user = userEvent.setup()
+
+    renderUserPostsScreen('1')
+
+    expect(await screen.findByText('First post')).toBeInTheDocument()
+
+    await user.click(
+      within(getPostItem('First post')).getByRole('button', {
+        name: /^delete$/i,
+      }),
+    )
+
+    expect(screen.getByText(/delete this post/i)).toBeInTheDocument()
+    expect(mockedDeletePost).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole('button', { name: /confirm delete/i }))
+
+    await waitFor(() => {
+      expect(mockedDeletePost).toHaveBeenCalledTimes(1)
+    })
+    expect(mockedDeletePost).toHaveBeenCalledWith(1)
+
+    await waitFor(() => {
+      expect(screen.queryByText('First post')).not.toBeInTheDocument()
+    })
+    expect(screen.getByText('Second post')).toBeInTheDocument()
+  })
+
+  it('T5-4 shows an error and preserves the list when a delete fails', async () => {
+    mockedGetPosts.mockResolvedValue(posts)
+    mockedDeletePost.mockRejectedValue(new Error('network down'))
+    const user = userEvent.setup()
+
+    renderUserPostsScreen('1')
+
+    expect(await screen.findByText('First post')).toBeInTheDocument()
+
+    await user.click(
+      within(getPostItem('First post')).getByRole('button', {
+        name: /^delete$/i,
+      }),
+    )
+    await user.click(screen.getByRole('button', { name: /confirm delete/i }))
+
+    expect(
+      await screen.findByText(/failed to delete the post/i),
+    ).toBeInTheDocument()
+
+    expect(screen.getByText('First post')).toBeInTheDocument()
+    expect(screen.getByText('Second post')).toBeInTheDocument()
+    expect(
+      within(getPostItem('First post')).getByRole('button', { name: /edit/i }),
+    ).not.toBeDisabled()
+    expect(
+      screen.getByRole('button', { name: /confirm delete/i }),
+    ).not.toBeDisabled()
+  })
+
+  it('T5-5 shows an error and keeps the edit values when an update fails', async () => {
+    mockedGetPosts.mockResolvedValue(posts)
+    mockedUpdatePost.mockRejectedValue(new Error('network down'))
+    const user = userEvent.setup()
+
+    renderUserPostsScreen('1')
+
+    expect(await screen.findByText('First post')).toBeInTheDocument()
+
+    await user.click(
+      within(getPostItem('First post')).getByRole('button', { name: /edit/i }),
+    )
+
+    const titleInput = screen.getByLabelText(/edit title/i)
+    await user.clear(titleInput)
+    await user.type(titleInput, 'Broken title')
+    await user.click(screen.getByRole('button', { name: /save changes/i }))
+
+    expect(
+      await screen.findByText(/failed to update the post/i),
+    ).toBeInTheDocument()
+
+    expect(screen.getByLabelText(/edit title/i)).toHaveValue('Broken title')
+    expect(screen.getByLabelText(/edit body/i)).toHaveValue('First body')
+    expect(screen.getByRole('button', { name: /save changes/i })).not.toBeDisabled()
+    expect(mockedGetPosts).toHaveBeenCalledTimes(1)
+
+    await user.click(screen.getByRole('button', { name: /cancel/i }))
+
+    expect(screen.getByText('First post')).toBeInTheDocument()
   })
 })

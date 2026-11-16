@@ -104,8 +104,14 @@ must state this honestly.
 ## Delivery
 
 - Forecast: ~600–800 authored lines across code + tests + docs (exceeds the
-  ~400-line review budget). Delivery strategy default `ask-on-risk`: ask the
-  user once about chain strategy before `apply` crosses the budget.
+  ~400-line review budget). Delivery strategy `ask-on-risk`; user chose chain
+  strategy **`feature-branch-chain`** after the budget was crossed at T4
+  (30 files / 3128 changed lines on the branch, nothing pushed yet).
+- Planned slices (stack on a tracker branch, only the tracker merges to main):
+  1. `T1+T2` test infrastructure + users list.
+  2. `T3+T4` user posts + create-post form.
+  3. `T5` edit/delete posts.
+  4. `T6` README.
 - Branch: `feat/jsonplaceholder-users-app` (created from the current
   `feat/typescript-tanstack-query` branch, since this feature depends on it).
 
@@ -176,5 +182,21 @@ must state this honestly.
       it was reduced back to a validation-only form so each later test had a
       real RED.
       Checks: `test` 16 passed, `typecheck` 0, `build` 0, `lint` 0 warnings.
-- [ ] T5 Edit and delete posts
+- [x] T5 Edit and delete posts — inline (same provider block). `updatePost` (PUT)
+      and `deletePost` (DELETE) in `src/api/posts.ts`; `useUpdatePost.ts`
+      (map by id), `useDeletePost.ts` (filter by id); `EditPostForm.tsx`
+      reusing the exact T4 `createPostSchema`; per-post edit/delete actions and
+      an explicit confirmation step in `UserPostsScreen.tsx`. Observed REDs:
+      - T5-1 RED `Unable to find an accessible element with the role "button"
+        and name /edit/i` → GREEN with the prefilled inline form.
+      - T5-2 RED `Unable to find an element with the text: Updated title` →
+        GREEN with the PUT wiring and in-place cache map.
+      - T5-3 RED `Unable to find an accessible element with the role "button"
+        and name /^delete$/i` → GREEN with confirmation + cache filter.
+      - T5-4 RED `Unable to find an element with the text: /failed to delete
+        the post/i` → GREEN with inline error, list preserved, actions enabled.
+      - T5-5 (added to cover the PRD's "failed PUT or DELETE") RED `Unable to
+        find an element with the text: /failed to update the post/i` → GREEN
+        with inline error, typed values kept, `getPosts` not refetched.
+      Checks: `test` 21 passed, `typecheck` 0, `build` 0, `lint` 0 warnings.
 - [ ] T6 README
